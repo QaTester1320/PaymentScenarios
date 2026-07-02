@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Gateway Authorization Testing Dashboard</title>
+    <style>
+        :root {
+            --bg-primary: #f4f7fe;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f8fafc;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --accent-color: #4f46e5;
+            --accent-success: #10b981;
+            --accent-hover: #4338ca;
+            --border-color: #e2e8f0;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --card-shadow-hover: 0 10px 15px -3px rgba(79, 70, 229, 0.1), 0 4px 6px -2px rgba(79, 70, 229, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, #ffffff 0%, #fdfeff 100%);
+            padding: 32px;
+            border-radius: 24px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 32px;
+            box-shadow: var(--card-shadow);
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+            color: #0f172a;
+            letter-spacing: -0.025em;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            margin-bottom: 28px;
+            font-weight: 500;
+        }
+
+        /* Search Bar Addition */
+        .search-wrapper {
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 14px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-main);
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        /* Metrics & Controls Banner */
+        .dashboard-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            align-items: center;
+            justify-content: space-between;
+            background-color: var(--bg-tertiary);
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .progress-container {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #334155;
+        }
+
+        .progress-bar-bg {
+            background-color: #e2e8f0;
+            height: 12px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            background: linear-gradient(90deg, var(--accent-color), #06b6d4);
+            height: 100%;
+            width: 0%;
+            border-radius: 12px;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background-color: var(--bg-secondary);
+            color: #475569;
+            border: 1px solid var(--border-color);
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .btn:hover {
+            border-color: #cbd5e1;
+            color: var(--text-main);
+            transform: translateY(-1px);
+        }
+
+        .btn.active {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+        }
+
+        .btn-export {
+            background-color: #f0fdf4;
+            border-color: #bbf7d0;
+            color: #16a34a;
+        }
+        .btn-export:hover {
+            background-color: #dcfce7;
+            border-color: #86efac;
+            color: #15803d;
+        }
+
+        .btn-reset {
+            background-color: #fff1f2;
+            border-color: #fecdd3;
+            color: #e11d48;
+        }
+        .btn-reset:hover {
+            background-color: #ffe4e6;
+            border-color: #fda4af;
+            color: #be123c;
+        }
+
+        /* Category Breakdown layout */
+        .category-section {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 28px;
+            margin-bottom: 32px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .category-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f1f5f9;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            letter-spacing: -0.01em;
+        }
+
+        .tc-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        @media (min-width: 768px) {
+            .tc-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Test Case Row Card */
+        .tc-card {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .tc-card-main {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            width: 100%;
+        }
+
+        .tc-card:hover {
+            border-color: #cbd5e1;
+            background-color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: var(--card-shadow);
+        }
+
+        .tc-card.checked {
+            border-color: #bbf7d0;
+            background-color: #f0fdf4;
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.05);
+        }
+        
+        .tc-card.checked:hover {
+            transform: none;
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.05);
+        }
+
+        .checkbox-wrapper {
+            position: relative;
+            margin-top: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tc-card input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: var(--accent-success);
+            border-radius: 6px;
+            border: 2px solid #cbd5e1;
+            transition: all 0.2s ease;
+        }
+
+        .tc-info {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+        }
+
+        .tc-id {
+            font-size: 0.75rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            background-color: #e2e8f0;
+            padding: 4px 8px;
+            border-radius: 6px;
+            width: max-content;
+            color: #475569;
+            letter-spacing: 0.05em;
+        }
+
+        .tc-card.checked .tc-id {
+            background-color: #dcfce7;
+            color: #15803d;
+        }
+
+        .tc-desc {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #334155;
+            transition: all 0.2s ease;
+        }
+
+        .tc-card.checked .tc-desc {
+            color: #94a3b8;
+            text-decoration: line-through;
+        }
+
+        /* Notes Box Element Styling */
+        .tc-notes-wrapper {
+            width: 100%;
+            padding-left: 38px;
+        }
+
+        .tc-notes-input {
+            width: 100%;
+            min-height: 40px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-secondary);
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-main);
+            resize: vertical;
+            transition: all 0.2s ease;
+        }
+
+        .tc-notes-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            background-color: #ffffff;
+        }
+
+        .tc-card.checked .tc-notes-input {
+            background-color: rgba(255,255,255,0.5);
+            border-color: #d1fae5;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Payment Gateway Integration QA Checklist</h1>
+        <p class="subtitle">Authorization-Only Iframe Flow Verification Suite</p>
+        
+        <div class="search-wrapper">
+            <input type="text" id="dashboard-search" class="search-input" placeholder="🔍 Type to search instantly through test scenarios (e.g. CVV, timeout, Visa)..." oninput="executeSearchFilter()">
+        </div>
+
+        <div class="dashboard-meta">
+            <div class="progress-container">
+                <div class="progress-text">
+                    <span>Testing Completion Progress</span>
+                    <span id="progress-percentage">0% (0/0)</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="progress-bar"></div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button class="btn active" id="btn-filter-all" onclick="filterCases('all', this)">All</button>
+                <button class="btn" onclick="filterCases('unchecked', this)">Unchecked</button>
+                <button class="btn" onclick="filterCases('checked', this)">Checked</button>
+                <button class="btn btn-export" onclick="exportChecklistCSV()">Export to CSV (Excel)</button>
+                <button class="btn btn-reset" onclick="resetChecklist()">Reset All</button>
+            </div>
+        </div>
+    </header>
+
+    <main id="checklist-container"></main>
+</div>
+
+<script>
+    // Current Active Filter Mode State Variable
+    let activeFilterMode = 'all';
+
+    // De-duplicated & Unified Complete Data Array Categorized Logically
+    const testData = [
+        {
+            category: "1. Core UI Loading & Verification",
+            cases: [
+                "Payment page loads successfully",
+                "Payment iframe loads safely and securely over HTTPS",
+                "Card input fields are visible inside iframe",
+                "Order amount displayed accurately matching checkout total",
+                "Currency displayed correctly matching checkout context",
+                "Able to switch focus dynamically into the iframe",
+                "Payment page layout configuration is fully responsive on desktop",
+                "Payment page layout configuration is fully responsive on mobile",
+                "Payment page layout configuration is fully responsive on tablet",
+                "Console exhibits zero JavaScript errors on initial load"
+            ]
+        },
+        {
+            category: "2. Card Network Brand Acceptance",
+            cases: [
+                "Successful system authorization using valid Visa card",
+                "Successful system authorization using valid MasterCard",
+                "Successful system authorization using valid American Express card",
+                "Successful system authorization using Discover card (if supported)"
+            ]
+        },
+        {
+            category: "3. Input Mandatory & Boundary Field Validation",
+            cases: [
+                "Card number field validation handles empty submission status",
+                "Expiry date field validation handles empty submission status",
+                "CVV security field validation handles empty submission status",
+                "Cardholder name field handling when empty (if contextually required)",
+                "System validates against explicitly incorrect invalid card numbers",
+                "System boundary checking for card number structures too short",
+                "System boundary checking for card number structures too long",
+                "Invalid Luhn algorithm card number failure validation parsing",
+                "Unsupported card type notification engine error messaging",
+                "Expired card temporal validation logic blocks entry",
+                "Invalid card expiration month boundary entry block (e.g., 00 or 13)",
+                "Invalid card expiration year boundary configurations handled",
+                "Invalid CVV security pattern recognition block",
+                "System boundary checking for CVV structures too short",
+                "System boundary checking for CVV structures too long",
+                "Alphabetic entry restriction blocks alphabetic characters in CVV",
+                "Alphabetic entry restriction blocks alphabetic characters in card number",
+                "Special characters validation stripping or blocking inside card number field",
+                "Card number string scrubbing handles explicit spaces seamlessly",
+                "Card number string scrubbing handles explicit hyphens seamlessly",
+                "Cardholder name structural handling containing unexpected numbers",
+                "Cardholder name structural handling containing unexpected special characters",
+                "Cardholder name text field boundary limitations parsing extremely long text",
+                "Validation UI alerts block clean submissions on completely empty payment form",
+                "Error messages display contextually correct UI formatting layout",
+                "Error messages are designed user-friendly for clarity"
+            ]
+        },
+        {
+            category: "4. Submit Button Control & Payment States",
+            cases: [
+                "Pay button disabled until all mandatory tracking elements match valid inputs",
+                "Pay button transitions to enabled state upon satisfying valid field rules",
+                "Visual loading status indicator displays during background processing states",
+                "System infrastructure actively blocks multi-clicks on Pay button via double-clicks",
+                "System infrastructure actively blocks multiple rapid clicks on Pay button sequentially"
+            ]
+        },
+        {
+            category: "5. Connection, Interruption & Navigation Management",
+            cases: [
+                "System error routing processes gateway API timeout states cleanly",
+                "Network disconnect/interruption handled gracefully during data transmission",
+                "User browser refresh action managed properly while payment is actively processing",
+                "User browser back button navigation managed properly while payment is processing",
+                "User browser application close events monitored correctly during checkout actions",
+                "Browser execution of native autofill parameters functions normally inside iframe",
+                "Keyboard Tab layout navigation context toggles structural focuses smoothly",
+                "Copy/Paste permissions inside card data elements function safely as per spec",
+                "User browser refresh operations triggered post-payment do not resubmit details",
+                "User browser back button navigation post-payment does not re-execute logic",
+                "Page reloading actions post-success do not submit duplicate API authorizations"
+            ]
+        },
+        {
+            category: "6. Authorization, Order Management & Receipts",
+            cases: [
+                "Transaction authorization ID token matches creation outputs upon success",
+                "Proper authorization confirmation text messages render clear UI confirmation",
+                "Backend creates corresponding tracking authorization order entity upon API success",
+                "Order checkout transaction logs appropriate code elements cleanly after validation",
+                "Automated invoice/confirmation workflow issues customer email post-process",
+                "Post-authorization tax processing numbers verify accurate math tracking rules",
+                "Post-authorization shipping calculations retain consistent data constraints",
+                "Valid discount code/coupon states remain saved correctly through payment pipeline",
+                "Authorized capture amounts explicitly match total order figures",
+                "Store administrative panel updates authorization/pending statuses successfully",
+                "Unique token assignments guarantee zero duplicate orders are written to database",
+                "Successful checkout routes cleanly to end receipt display presenting order details",
+                "Authorized transaction elements remain configurable for standard later Capture actions",
+                "Authorized transaction elements remain configurable for Void parameters actions"
+            ]
+        },
+        {
+            category: "7. Critical Security, Infrastructure & Expiry States",
+            cases: [
+                "Card payload elements remain completely hidden inside client page source code views",
+                "Card metrics are entirely restricted from storing data to local/session variables",
+                "CVV authentication metadata is purged completely from memory vectors post-flow",
+                "Sensitive card structures hide raw sequences behind UI mask filters appropriately",
+                "System parameters force session timeouts cleanly before active checkout loops start",
+                "System parameters process session timeout drops occurring mid-payment execution",
+                "Transaction handling accommodates post-decline retry operations seamlessly",
+                "Transaction processing architecture dynamically guards against retry duplicate records"
+            ]
+        },
+        {
+            category: "8. Optional Conditional Architecture Extensions",
+            cases: [
+                "Checkout pipeline functions smoothly processing guest validation rules",
+                "Checkout pipeline functions smoothly processing authenticated profile accounts",
+                "Checkout pipeline processes payments utilizing stored credit profile tokens",
+                "Order engine calculations manage multi-item quantity purchases stably",
+                "Order engine handles combined coupon discount and balance payments smoothly",
+                "Checkout modules correctly map billing profiles designated tax-exempt",
+                "Checkout modules correctly map pricing parameters applying free shipping rules",
+                "Gateway integrations manage partial authorization limits if forced by bank",
+                "Store administration panels resolve full void operations against authorized payments",
+                "Store administration panels execute capture commands on open authorized logs",
+                "Store administration panels parse partial capture amounts if supported",
+                "Refund automation triggers execute against previously captured order files",
+                "Checkout systems process complex foreign currency conversion rules cleanly"
+            ]
+        }
+    ];
+
+    let globalCounter = 1;
+
+    // Load setup data from local storage tracking or construct list structure
+    function initChecklist() {
+        const container = document.getElementById('checklist-container');
+        container.innerHTML = '';
+        globalCounter = 1;
+
+        const savedStates = JSON.parse(localStorage.getItem('moneris_qa_states')) || {};
+        const savedNotes = JSON.parse(localStorage.getItem('moneris_qa_notes')) || {};
+
+        testData.forEach((section) => {
+            const sectionEl = document.createElement('section');
+            sectionEl.className = 'category-section';
+
+            const titleEl = document.createElement('div');
+            titleEl.className = 'category-title';
+            titleEl.innerText = section.category;
+            sectionEl.appendChild(titleEl);
+
+            const gridEl = document.createElement('div');
+            gridEl.className = 'tc-grid';
+
+            section.cases.forEach((scenarioText) => {
+                const tcId = `TC-${String(globalCounter).padStart(3, '0')}`;
+                const isChecked = savedStates[tcId] || false;
+                const noteText = savedNotes[tcId] || '';
+
+                const card = document.createElement('div');
+                card.className = `tc-card ${isChecked ? 'checked' : ''}`;
+                card.setAttribute('data-id', tcId);
+                card.onclick = () => toggleCheck(tcId);
+
+                card.innerHTML = `
+                    <div class="tc-card-main">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="check-${tcId}" ${isChecked ? 'checked' : ''} onclick="event.stopPropagation(); toggleCheck('${tcId}')">
+                        </div>
+                        <div class="tc-info">
+                            <span class="tc-id">${tcId}</span>
+                            <span class="tc-desc">${scenarioText}</span>
+                        </div>
+                    </div>
+                    <div class="tc-notes-wrapper" onclick="event.stopPropagation();">
+                        <textarea id="notes-${tcId}" class="tc-notes-input" placeholder="Add test logs, data parameters, or failure notes here..." oninput="saveNote('${tcId}', this.value)">${noteText}</textarea>
+                    </div>
+                `;
+
+                gridEl.appendChild(card);
+                globalCounter++;
+            });
+
+            sectionEl.appendChild(gridEl);
+            container.appendChild(sectionEl);
+        });
+
+        updateProgress();
+        executeSearchFilter();
+    }
+
+    // Toggle single card element checked states
+    function toggleCheck(tcId) {
+        const card = document.querySelector(`.tc-card[data-id="${tcId}"]`);
+        const checkbox = document.getElementById(`check-${tcId}`);
+        
+        const nextState = !card.classList.contains('checked');
+        
+        if(nextState) {
+            card.classList.add('checked');
+            checkbox.checked = true;
+        } else {
+            card.classList.remove('checked');
+            checkbox.checked = false;
+        }
+
+        // Save layout progress arrays to storage
+        const savedStates = JSON.parse(localStorage.getItem('moneris_qa_states')) || {};
+        savedStates[tcId] = nextState;
+        localStorage.setItem('moneris_qa_states', JSON.stringify(savedStates));
+
+        updateProgress();
+        applyVisibilityRules();
+    }
+
+    // Save individual card note text tracking variables
+    function saveNote(tcId, textValue) {
+        const savedNotes = JSON.parse(localStorage.getItem('moneris_qa_notes')) || {};
+        savedNotes[tcId] = textValue;
+        localStorage.setItem('moneris_qa_notes', JSON.stringify(savedNotes));
+    }
+
+    // Real-time metrics calculations updates
+    function updateProgress() {
+        const total = globalCounter - 1;
+        const checkedCount = document.querySelectorAll('.tc-card.checked').length;
+        const pct = total > 0 ? Math.round((checkedCount / total) * 100) : 0;
+
+        document.getElementById('progress-percentage').innerText = `${pct}% (${checkedCount}/${total})`;
+        document.getElementById('progress-bar').style.width = `${pct}%`;
+    }
+
+    // Interactive button filtering state changer
+    function filterCases(mode, btnElement) {
+        document.querySelectorAll('.controls .btn').forEach(btn => btn.classList.remove('active'));
+        btnElement.classList.add('active');
+        activeFilterMode = mode;
+        applyVisibilityRules();
+    }
+
+    // Composite single pipeline evaluating logic for status and keyword searching simultaneously
+    function applyVisibilityRules() {
+        const searchQuery = document.getElementById('dashboard-search').value.toLowerCase().trim();
+        const sections = document.querySelectorAll('.category-section');
+
+        sections.forEach(section => {
+            let visibleCardsInSection = 0;
+            const cards = section.querySelectorAll('.tc-card');
+
+            cards.forEach(card => {
+                const isChecked = card.classList.contains('checked');
+                const descText = card.querySelector('.tc-desc').innerText.toLowerCase();
+                const idText = card.querySelector('.tc-id').innerText.toLowerCase();
+                const notesText = card.querySelector('.tc-notes-input').value.toLowerCase();
+
+                // 1. Evaluate check statuses filter matching rules
+                let matchesStatus = false;
+                if (activeFilterMode === 'all') matchesStatus = true;
+                else if (activeFilterMode === 'checked') matchesStatus = isChecked;
+                else if (activeFilterMode === 'unchecked') matchesStatus = !isChecked;
+
+                // 2. Evaluate string query lookup pattern mappings
+                let matchesSearch = true;
+                if (searchQuery !== '') {
+                    matchesSearch = descText.includes(searchQuery) || idText.includes(searchQuery) || notesText.includes(searchQuery);
+                }
+
+                // 3. Render calculations output display properties toggle values
+                if (matchesStatus && matchesSearch) {
+                    card.style.display = 'flex';
+                    visibleCardsInSection++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Cleanly remove entire structural panels contextually if no item remains visible
+            if (visibleCardsInSection > 0) {
+                section.style.display = 'block';
+            } else {
+                section.style.display = 'none';
+            }
+        });
+    }
+
+    // Input handler hook attaching live key entry inputs
+    function executeSearchFilter() {
+        applyVisibilityRules();
+    }
+
+    // CSV/Excel Export Pipeline Implementation Including Notes and Status Fields
+    function exportChecklistCSV() {
+        const savedStates = JSON.parse(localStorage.getItem('moneris_qa_states')) || {};
+        const savedNotes = JSON.parse(localStorage.getItem('moneris_qa_notes')) || {};
+        
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += "TC ID,Category,Test Scenario,Status,Notes\n";
+        
+        let exportCounter = 1;
+        
+        testData.forEach((section) => {
+            section.cases.forEach((scenarioText) => {
+                const tcId = `TC-${String(exportCounter).padStart(3, '0')}`;
+                const status = savedStates[tcId] ? "Pass" : "Unchecked/Fail";
+                const note = savedNotes[tcId] ? savedNotes[tcId].replace(/"/g, '""') : "";
+                
+                // Sanitizing string sequences for secure CSV compilation
+                const cleanSecText = scenarioText.replace(/"/g, '""');
+                const cleanCatText = section.category.replace(/"/g, '""');
+                
+                csvContent += `"${tcId}","${cleanCatText}","${cleanSecText}","${status}","${note}"\n";`;
+                exportCounter++;
+            });
+        });
+        
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "payment_gateway_qa_checklist_report.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // Full system metrics wipe
+    function resetChecklist() {
+        if(confirm("Are you sure you want to clear your current testing checklist progress and note logs?")) {
+            localStorage.removeItem('moneris_qa_states');
+            localStorage.removeItem('moneris_qa_notes');
+            document.getElementById('dashboard-search').value = '';
+            initChecklist();
+            
+            const allBtn = document.getElementById('btn-filter-all');
+            filterCases('all', allBtn);
+        }
+    }
+
+    // Instantiate pipeline compilation initialization loops
+    window.onload = initChecklist;
+</script>
+</body>
+</html>
