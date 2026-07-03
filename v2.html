@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Gateway Payment Integration Verification Suite</title>
+    <style>
+        :root {
+            --bg-primary: #f4f7fe;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f8fafc;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --accent-color: #4f46e5;
+            --accent-success: #10b981;
+            --border-color: #e2e8f0;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 30px 15px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, #ffffff 0%, #fdfeff 100%);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 25px;
+            box-shadow: var(--card-shadow);
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+            color: #0f172a;
+            letter-spacing: -0.025em;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .tabs-nav {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .tabs-nav {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .tabs-nav {
+                grid-template-columns: repeat(7, 1fr);
+            }
+        }
+
+        .tab-btn {
+            background-color: #e2e8f0;
+            color: #475569;
+            border: 1px solid transparent;
+            padding: 12px 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn:hover {
+            background-color: #cbd5e1;
+            color: #0f172a;
+        }
+
+        .tab-btn.active {
+            background-color: var(--accent-color);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+        }
+
+        .search-wrapper {
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 14px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-main);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .dashboard-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            justify-content: space-between;
+            background-color: var(--bg-tertiary);
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .progress-container {
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #334155;
+        }
+
+        .progress-bar-bg {
+            background-color: #e2e8f0;
+            height: 10px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            background: linear-gradient(90deg, var(--accent-color), #06b6d4);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background-color: var(--bg-secondary);
+            color: #475569;
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+
+        .btn.active {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+            color: #fff;
+        }
+
+        .btn-export {
+            background-color: #f0fdf4;
+            border-color: #bbf7d0;
+            color: #16a34a;
+        }
+
+        .btn-reset {
+            background-color: #fff1f2;
+            border-color: #fecdd3;
+            color: #e11d48;
+        }
+
+        .category-section {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 25px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .category-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f1f5f9;
+            color: #0f172a;
+        }
+
+        .tc-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+
+        @media (min-width: 768px) {
+            .tc-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .tc-card {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tc-card:hover {
+            border-color: #cbd5e1;
+            background-color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        .tc-card.checked {
+            border-color: #bbf7d0;
+            background-color: #f0fdf4;
+        }
+
+        .tc-card-main {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .checkbox-wrapper input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--accent-success);
+        }
+
+        .tc-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .tc-id {
+            font-size: 0.7rem;
+            font-weight: 700;
+            font-family: monospace;
+            background-color: #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            width: max-content;
+            color: #475569;
+        }
+
+        .tc-card.checked .tc-id {
+            background-color: #dcfce7;
+            color: #15803d;
+        }
+
+        .tc-desc {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #334155;
+        }
+
+        .tc-card.checked .tc-desc {
+            color: #94a3b8;
+            text-decoration: line-through;
+        }
+
+        .tc-notes-wrapper {
+            width: 100%;
+            padding-left: 32px;
+        }
+
+        .tc-notes-input {
+            width: 100%;
+            min-height: 38px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-secondary);
+            font-family: inherit;
+            font-size: 0.8rem;
+            color: var(--text-main);
+            resize: vertical;
+        }
+
+        .vault-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .vault-block {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        .vault-block h3 {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            color: var(--accent-color);
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 6px;
+        }
+
+        .vault-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        .vault-table th, .vault-table td {
+            border: 1px solid #e2e8f0;
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        .vault-table th {
+            background-color: #f8fafc;
+            color: #475569;
+        }
+
+        .doc-link {
+            display: inline-block;
+            margin-top: 10px;
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .doc-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Payment Gateway Integration QA Checklist</h1>
+        <p class="subtitle">Comprehensive Multi-Tab Device Functional Verification Suite</p>
+        
+        <nav class="tabs-nav">
+            <button class="tab-btn active" onclick="switchTab('gpay', this)">Google Pay</button>
+            <button class="tab-btn" onclick="switchTab('applepay', this)">Apple Pay</button>
+            <button class="tab-btn" onclick="switchTab('cc', this)">Credit Card</button>
+            <button class="tab-btn" onclick="switchTab('paypal', this)">PayPal</button>
+            <button class="tab-btn" onclick="switchTab('moneris', this)">Moneris Flow</button>
+            <button class="tab-btn" onclick="switchTab('authorizenet', this)">Authorize.Net</button>
+            <button class="tab-btn" style="background-color: #fef08a; color: #854d0e;" onclick="switchTab('vault', this)">🔑 Reference Vault</button>
+        </nav>
+
+        <div id="filter-controls-area">
+            <div class="search-wrapper">
+                <input type="text" id="dashboard-search" class="search-input" placeholder="🔍 Instant search across current active payment tab scenarios..." oninput="executeSearchFilter()">
+            </div>
+
+            <div class="dashboard-meta">
+                <div class="progress-container">
+                    <div class="progress-text">
+                        <span>Active Tab Progress</span>
+                        <span id="progress-percentage">0% (0/0)</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="progress-bar"></div>
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <button class="btn active" id="btn-filter-all" onclick="filterCases('all', this)">All</button>
+                    <button class="btn" onclick="filterCases('unchecked', this)">Unchecked</button>
+                    <button class="btn" onclick="filterCases('checked', this)">Checked</button>
+                    <button class="btn btn-export" onclick="exportChecklistCSV()">Export Active Tab Report</button>
+                    <button class="btn btn-reset" onclick="resetChecklist()">Reset Current Tab</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main id="checklist-container"></main>
+</div>
+
+<script>
+    let currentTab = 'gpay';
+    let activeFilterMode = 'all';
+
+    const multiData = {
+        gpay: [
+            {
+                category: "Google Pay - Positive Scenarios",
+                cases: [
+                    "Google Pay button shows clearly on the page",
+                    "Google Pay button loads fast when page opens",
+                    "Clicking button opens the Google Pay popup",
+                    "Popup shows the correct total amount",
+                    "Popup shows the correct currency symbol",
+                    "User can select a saved Visa card from their wallet",
+                    "User can select a saved Mastercard from their wallet",
+                    "User can add a new credit card inside the popup",
+                    "Fingerprint scan works to approve payment",
+                    "PIN code works to approve payment",
+                    "Payment token goes to the server safely",
+                    "Database saves the new order ID",
+                    "User goes to the success thank you page",
+                    "Shopping cart becomes empty after payment",
+                    "Order confirmation email sends automatically",
+                    "User can checkout as a guest with Google Pay",
+                    "User can checkout while logged into website with Google Pay"
+                ]
+            },
+            {
+                category: "Google Pay - Edge Scenarios",
+                cases: [
+                    "Button works on Google Chrome browser",
+                    "Button works on Microsoft Edge browser",
+                    "Button works on Mozilla Firefox browser",
+                    "Button works on Opera browser",
+                    "Layout looks good on a small mobile phone screen",
+                    "Layout looks good on a large desktop monitor",
+                    "Popup adjusts when phone turns sideways (landscape)",
+                    "Tax updates correctly if user changes state in popup",
+                    "Shipping price updates if user changes country in popup",
+                    "Payment works if discount code makes the total $0.00",
+                    "Payment works for very large amounts (e.g., $9,999.00)",
+                    "Browser autofill does not break the hidden payment scripts",
+                    "User can use keyboard tab key to select the Google Pay button",
+                    "Payment works if cart has many different items",
+                    "Payment works if cart has physical and digital items together",
+                    "Session stays alive if user minimizes browser during payment",
+                    "Payment completes if user takes 10 minutes to finish the popup"
+                ]
+            },
+            {
+                category: "Google Pay - Negative Scenarios",
+                cases: [
+                    "User clicks the close button on the popup manually",
+                    "User clicks outside the popup to cancel it",
+                    "Google account has absolutely zero cards saved in it",
+                    "User selects an expired card from their Google wallet",
+                    "Bank declines because of not enough money",
+                    "Bank declines because card is reported stolen",
+                    "Bank declines because of suspected fraud",
+                    "Internet connection turns off while popup is loading",
+                    "Internet connection turns off while payment is processing",
+                    "API takes too long and times out safely",
+                    "User clicks the Google Pay button two times very fast",
+                    "User clicks the Google Pay button five times very fast",
+                    "Website blocks Google Pay if required form fields are blank",
+                    "Server shows a red error message if token fails",
+                    "Cart items stay in cart if payment fails",
+                    "Website blocks payment if testing from an unverified domain"
+                ]
+            }
+        ],
+        applepay: [
+            {
+                category: "Apple Pay - Positive Scenarios",
+                cases: [
+                    "Apple Pay button shows clearly on Apple Safari browser",
+                    "Clicking button opens the Apple Pay sliding menu",
+                    "Menu shows the correct total price",
+                    "Menu shows the correct product names",
+                    "User can approve payment using Face ID",
+                    "User can approve payment using Touch ID",
+                    "User can approve payment using iPhone passcode",
+                    "Payment token goes to the server safely",
+                    "Database saves the new order ID",
+                    "User goes to the success thank you page",
+                    "Stock inventory goes down by 1 after payment",
+                    "Order confirmation email sends automatically",
+                    "User can checkout as a guest with Apple Pay",
+                    "User can checkout while logged in with Apple Pay",
+                    "Payment works on an Apple Watch device"
+                ]
+            },
+            {
+                category: "Apple Pay - Edge Scenarios",
+                cases: [
+                    "Apple Pay button completely hides itself on Google Chrome",
+                    "Apple Pay button completely hides itself on Windows computers",
+                    "Apple Pay works when Mac hands off to iPhone to confirm",
+                    "Layout looks good on a small iPhone SE screen",
+                    "Layout looks good on a large iPad Pro screen",
+                    "Menu works when iPad is in split-screen mode",
+                    "Tax updates correctly if user changes state in Apple menu",
+                    "Shipping price updates if user changes country in Apple menu",
+                    "Payment works if discount code makes the total $0.00",
+                    "Payment works for very large amounts (e.g., $9,999.00)",
+                    "User changes from light mode to dark mode on iPhone",
+                    "Phone gets an incoming call while Apple Pay menu is open",
+                    "User minimizes Safari while Apple Pay menu is open",
+                    "User uses an international language on their iPhone",
+                    "Payment completes if user takes 10 minutes to finish"
+                ]
+            },
+            {
+                category: "Apple Pay - Negative Scenarios",
+                cases: [
+                    "User clicks the cancel button on the Apple Pay menu",
+                    "Face ID fails three times and asks for passcode",
+                    "Passcode is entered wrong three times",
+                    "Apple Wallet has absolutely zero cards saved in it",
+                    "User selects an expired card from their Apple Wallet",
+                    "Bank declines because of not enough money",
+                    "Bank declines because card is reported stolen",
+                    "Bank declines because of suspected fraud",
+                    "Internet connection turns off while menu is open",
+                    "Internet connection turns off while scanning Face ID",
+                    "API takes too long and times out safely",
+                    "User clicks the Apple Pay button two times very fast",
+                    "Website blocks Apple Pay if required form fields are blank",
+                    "Merchant domain validation certificate fails to load",
+                    "Server shows a red error message if token fails",
+                    "Cart items stay in cart if Apple Pay payment fails"
+                ]
+            }
+        ],
+        cc: [
+            {
+                category: "Credit Card - Positive Scenarios",
+                cases: [
+                    "Type a valid Visa card and pay successfully",
+                    "Type a valid Mastercard and pay successfully",
+                    "Type a valid American Express card and pay successfully",
+                    "Type a valid Discover card and pay successfully",
+                    "Type a valid JCB card and pay successfully",
+                    "Type a valid Diners Club card and pay successfully",
+                    "Type a valid UnionPay card and pay successfully",
+                    "Form shows the Visa logo when typing a Visa number",
+                    "Form shows the Mastercard logo when typing a Mastercard number",
+                    "Form shows the Amex logo when typing an Amex number",
+                    "User can copy and paste a full card number into the box",
+                    "User can use keyboard tab key to move between all boxes",
+                    "Card saves securely for future if user checks the save box",
+                    "User goes to the success thank you page fast after payment",
+                    "Database saves the payment ID correctly",
+                    "Receipt email sends right after payment",
+                    "Total amount matches the cart amount exactly",
+                    "Card fields load safely inside a secure iframe box"
+                ]
+            },
+            {
+                category: "Credit Card - Edge Scenarios",
+                cases: [
+                    "Type spaces in card number and it still processes",
+                    "Type dashes in card number and it still processes",
+                    "Use browser autofill to fill the whole form at once",
+                    "Type a very long name in the cardholder name box",
+                    "Type special characters like @ or - in the name box",
+                    "Use an expiry date 10 years in the future",
+                    "Use the exact current month and year for expiry",
+                    "Click the pay button two times very fast",
+                    "Refresh the page right after clicking pay",
+                    "Click browser back button while page is loading",
+                    "Change screen size to mobile while typing card number",
+                    "Change from mobile to desktop while typing card number",
+                    "Total price is $0.00 and form handles it without crashing",
+                    "Total price is very high like $999,999.00",
+                    "Network speed is very slow (3G) during payment",
+                    "Billing address is completely different from shipping address",
+                    "Billing address is exactly the same as shipping address"
+                ]
+            },
+            {
+                category: "Credit Card - Negative Scenarios",
+                cases: [
+                    "Click pay when card number box is completely empty",
+                    "Click pay when expiry date box is completely empty",
+                    "Click pay when CVV security code box is completely empty",
+                    "Type letters instead of numbers in the card number box",
+                    "Type letters instead of numbers in the CVV box",
+                    "Type special symbols in the card number box",
+                    "Type a wrong card number (Luhn algorithm check fails)",
+                    "Type a card number that is too short",
+                    "Type a card number that is too long",
+                    "Type an old expiry date from the past",
+                    "Type a wrong month like 13 or 00",
+                    "Type a CVV that is too short for the brand",
+                    "Card gets declined for no money (Insufficient Funds)",
+                    "Card gets declined for stolen card",
+                    "Card gets declined for lost card",
+                    "Card gets declined for suspected fraud",
+                    "CVV does not match error from the bank",
+                    "Address does not match error (AVS) from the bank",
+                    "Bank says Do Not Honor this card",
+                    "Bank says Expired Card during processing",
+                    "Internet disconnects completely when clicking pay button",
+                    "API takes too long and times out safely"
+                ]
+            }
+        ],
+        paypal: [
+            {
+                category: "PayPal - Positive Scenarios",
+                cases: [
+                    "PayPal yellow button shows clearly on the page",
+                    "Clicking button opens the PayPal login popup window",
+                    "User can log in to PayPal with email and password",
+                    "Popup shows the correct total price",
+                    "Popup shows the correct cart items",
+                    "User can pay using their PayPal wallet balance",
+                    "User can pay using a bank account linked to PayPal",
+                    "User can pay using a credit card linked to PayPal",
+                    "User approves payment and popup closes itself",
+                    "Payment token goes to the server safely",
+                    "Database saves the new order ID",
+                    "User goes to the success thank you page",
+                    "Order confirmation email sends automatically",
+                    "User can checkout as a guest using PayPal guest feature",
+                    "User can use PayPal Pay in 4 installment option"
+                ]
+            },
+            {
+                category: "PayPal - Edge Scenarios",
+                cases: [
+                    "User splits payment between PayPal balance and a card",
+                    "User pays with an eCheck that will clear in 3 days",
+                    "User changes their shipping address inside the PayPal popup",
+                    "User changes their currency inside the PayPal popup",
+                    "Layout looks good on a small mobile phone screen",
+                    "Layout looks good on a large desktop monitor",
+                    "User takes 15 minutes inside the popup before approving",
+                    "Payment works if discount code makes the total $0.00",
+                    "Payment works for very large amounts (e.g., $9,999.00)",
+                    "User minimizes the browser while popup is open",
+                    "User uses an international language in PayPal settings",
+                    "Cart has 50 different items to send to PayPal summary",
+                    "Browser blocks third-party cookies but PayPal still works"
+                ]
+            },
+            {
+                category: "PayPal - Negative Scenarios",
+                cases: [
+                    "User clicks the close X button on the PayPal popup",
+                    "Browser pop-up blocker stops the PayPal window from opening",
+                    "User types the wrong PayPal password three times",
+                    "PayPal account is locked or restricted",
+                    "PayPal wallet has exactly zero balance and no linked cards",
+                    "Bank linked to PayPal declines because of not enough money",
+                    "PayPal API sandbox server is down or broken",
+                    "Internet connection turns off while popup is loading",
+                    "Internet connection turns off while approving payment",
+                    "API takes too long and times out safely",
+                    "User clicks the PayPal button two times very fast",
+                    "Website blocks PayPal if required form fields are blank",
+                    "Server shows a red error message if capture fails",
+                    "Cart items stay in cart if payment is cancelled",
+                    "Fraud engine stops the payment and warns the user"
+                ]
+            }
+        ],
+        moneris: [
+            {
+                category: "Moneris Flow - Positive Scenarios",
+                cases: [
+                    "Moneris iframe loads clearly on the page",
+                    "Type a valid Visa card and generate Moneris token",
+                    "Type a valid Mastercard and generate Moneris token",
+                    "Type a valid Amex card and generate Moneris token",
+                    "Moneris token goes to the server safely",
+                    "Backend script processes the token and captures money",
+                    "Database saves the Moneris receipt ID correctly",
+                    "User goes to the success thank you page fast",
+                    "Total amount matches the cart amount exactly",
+                    "Card fields hide properly behind the secure iframe",
+                    "User can copy and paste a full card number into iframe",
+                    "User can use keyboard tab key to move between iframe boxes"
+                ]
+            },
+            {
+                category: "Moneris Flow - Edge Scenarios",
+                cases: [
+                    "Type spaces in card number inside iframe",
+                    "Use browser autofill to fill the Moneris iframe",
+                    "Change screen size to mobile while typing in iframe",
+                    "Change from mobile to desktop while typing in iframe",
+                    "Total price is $0.00 and form handles it",
+                    "Total price is very high like $999,999.00",
+                    "Network speed is very slow (3G) during iframe load",
+                    "User clicks the pay button two times very fast",
+                    "Refresh the page right after clicking pay",
+                    "Click browser back button while page is loading",
+                    "Session stays alive if user minimizes browser"
+                ]
+            },
+            {
+                category: "Moneris Flow - Negative Scenarios",
+                cases: [
+                    "Moneris iframe fails to load completely",
+                    "Store ID in the code is wrong",
+                    "API Token in the code is wrong",
+                    "Click pay when card number box is completely empty",
+                    "Click pay when expiry date box is completely empty",
+                    "Type a wrong card number (Luhn algorithm check fails)",
+                    "Type an old expiry date from the past",
+                    "Card gets declined for no money (Insufficient Funds)",
+                    "Card gets declined for suspected fraud",
+                    "CVD (CVV) does not match error from Moneris",
+                    "AVS (Address) does not match error from Moneris",
+                    "Moneris returns a hard decline code (Code 50 or above)",
+                    "Internet disconnects completely when clicking pay",
+                    "API takes too long and times out safely"
+                ]
+            }
+        ],
+        authorizenet: [
+            {
+                category: "Authorize.Net - Positive Scenarios",
+                cases: [
+                    "Accept.js script loads clearly on the page",
+                    "Type a valid Visa card and get opaque data token",
+                    "Type a valid Mastercard and get opaque data token",
+                    "Type a valid Amex card and get opaque data token",
+                    "Type a valid Discover card and get opaque data token",
+                    "Opaque data descriptor goes to the server safely",
+                    "Backend script captures the transaction ID correctly",
+                    "Database saves the Auth.net transaction ID",
+                    "User goes to the success thank you page fast",
+                    "Total amount matches the cart amount exactly",
+                    "User can copy and paste a full card number",
+                    "User can use keyboard tab key to move between boxes"
+                ]
+            },
+            {
+                category: "Authorize.Net - Edge Scenarios",
+                cases: [
+                    "Type spaces in card number and script cleans it",
+                    "Use browser autofill to fill the form",
+                    "Change screen size to mobile while typing",
+                    "Change from mobile to desktop while typing",
+                    "Total price is $0.00 and script handles it",
+                    "Total price is very high like $999,999.00",
+                    "Network speed is very slow (3G) during Accept.js load",
+                    "User clicks the pay button two times very fast",
+                    "Refresh the page right after clicking pay",
+                    "Click browser back button while page is loading",
+                    "Session stays alive if user minimizes browser"
+                ]
+            },
+            {
+                category: "Authorize.Net - Negative Scenarios",
+                cases: [
+                    "Accept.js script fails to load from Authorize.net servers",
+                    "Client Key in the code is wrong or missing",
+                    "API Login ID in the code is wrong or missing",
+                    "Click pay when card number box is completely empty",
+                    "Click pay when expiry date box is completely empty",
+                    "Type a wrong card number (Luhn algorithm check fails)",
+                    "Type an old expiry date from the past",
+                    "Card gets declined for no money (Error Code 2)",
+                    "Card gets declined for referral (Error Code 3)",
+                    "Card gets declined for suspected fraud (Error Code 250)",
+                    "CVV does not match error (Error Code 65)",
+                    "AVS (Address) does not match error (Error Code 27)",
+                    "Duplicate transaction error because user clicked twice (Error Code 11)",
+                    "Internet disconnects completely when clicking pay",
+                    "API takes too long and times out safely"
+                ]
+            }
+        ]
+    };
+
+    function switchTab(tabKey, element) {
+        currentTab = tabKey;
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        element.classList.add('active');
+
+        const controls = document.getElementById('filter-controls-area');
+        if (tabKey === 'vault') {
+            controls.style.display = 'none';
+            renderVault();
+        } else {
+            controls.style.display = 'block';
+            const allBtn = document.getElementById('btn-filter-all');
+            filterCases('all', allBtn);
+            initChecklist();
+        }
+    }
+
+    function initChecklist() {
+        const container = document.getElementById('checklist-container');
+        container.innerHTML = '';
+
+        const savedStates = JSON.parse(localStorage.getItem(`qa_states_${currentTab}`)) || {};
+        const savedNotes = JSON.parse(localStorage.getItem(`qa_notes_${currentTab}`)) || {};
+
+        let localCounter = 1;
+        const currentData = multiData[currentTab] || [];
+
+        currentData.forEach((section) => {
+            const sectionEl = document.createElement('section');
+            sectionEl.className = 'category-section';
+
+            const titleEl = document.createElement('div');
+            titleEl.className = 'category-title';
+            titleEl.innerText = section.category;
+            sectionEl.appendChild(titleEl);
+
+            const gridEl = document.createElement('div');
+            gridEl.className = 'tc-grid';
+
+            section.cases.forEach((scenarioText) => {
+                const tcId = `${currentTab.toUpperCase()}-${String(localCounter).padStart(3, '0')}`;
+                const isChecked = savedStates[tcId] || false;
+                const noteText = savedNotes[tcId] || '';
+
+                const card = document.createElement('div');
+                card.className = `tc-card ${isChecked ? 'checked' : ''}`;
+                card.setAttribute('data-id', tcId);
+                card.onclick = () => toggleCheck(tcId);
+
+                card.innerHTML = `
+                    <div class="tc-card-main">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="check-${tcId}" ${isChecked ? 'checked' : ''} onclick="event.stopPropagation(); toggleCheck('${tcId}')">
+                        </div>
+                        <div class="tc-info">
+                            <span class="tc-id">${tcId}</span>
+                            <span class="tc-desc">${scenarioText}</span>
+                        </div>
+                    </div>
+                    <div class="tc-notes-wrapper" onclick="event.stopPropagation();">
+                        <textarea id="notes-${tcId}" class="tc-notes-input" placeholder="Add test data, card types, error parameters, or logs..." oninput="saveNote('${tcId}', this.value)">${noteText}</textarea>
+                    </div>
+                `;
+
+                gridEl.appendChild(card);
+                localCounter++;
+            });
+
+            sectionEl.appendChild(gridEl);
+            container.appendChild(sectionEl);
+        });
+
+        updateProgress();
+        applyVisibilityRules();
+    }
+
+    function toggleCheck(tcId) {
+        const card = document.querySelector(`.tc-card[data-id="${tcId}"]`);
+        const checkbox = document.getElementById(`check-${tcId}`);
+        const nextState = !card.classList.contains('checked');
+        
+        if(nextState) {
+            card.classList.add('checked');
+            checkbox.checked = true;
+        } else {
+            card.classList.remove('checked');
+            checkbox.checked = false;
+        }
+
+        const savedStates = JSON.parse(localStorage.getItem(`qa_states_${currentTab}`)) || {};
+        savedStates[tcId] = nextState;
+        localStorage.setItem(`qa_states_${currentTab}`, JSON.stringify(savedStates));
+
+        updateProgress();
+        applyVisibilityRules();
+    }
+
+    function saveNote(tcId, textValue) {
+        const savedNotes = JSON.parse(localStorage.getItem(`qa_notes_${currentTab}`)) || {};
+        savedNotes[tcId] = textValue;
+        localStorage.setItem(`qa_notes_${currentTab}`, JSON.stringify(savedNotes));
+    }
+
+    function updateProgress() {
+        const total = document.querySelectorAll('.tc-card').length;
+        const checkedCount = document.querySelectorAll('.tc-card.checked').length;
+        const pct = total > 0 ? Math.round((checkedCount / total) * 100) : 0;
+
+        document.getElementById('progress-percentage').innerText = `${pct}% (${checkedCount}/${total})`;
+        document.getElementById('progress-bar').style.width = `${pct}%`;
+    }
+
+    function filterCases(mode, btnElement) {
+        document.querySelectorAll('.controls .btn').forEach(btn => btn.classList.remove('active'));
+        btnElement.classList.add('active');
+        activeFilterMode = mode;
+        applyVisibilityRules();
+    }
+
+    function applyVisibilityRules() {
+        if (currentTab === 'vault') return;
+        const searchQuery = document.getElementById('dashboard-search').value.toLowerCase().trim();
+        const sections = document.querySelectorAll('.category-section');
+
+        sections.forEach(section => {
+            let visibleCards = 0;
+            const cards = section.querySelectorAll('.tc-card');
+
+            cards.forEach(card => {
+                const isChecked = card.classList.contains('checked');
+                const descText = card.querySelector('.tc-desc').innerText.toLowerCase();
+                const idText = card.querySelector('.tc-id').innerText.toLowerCase();
+                const notesText = card.querySelector('.tc-notes-input').value.toLowerCase();
+
+                let matchesStatus = (activeFilterMode === 'all') || (activeFilterMode === 'checked' && isChecked) || (activeFilterMode === 'unchecked' && !isChecked);
+                let matchesSearch = searchQuery === '' || descText.includes(searchQuery) || idText.includes(searchQuery) || notesText.includes(searchQuery);
+
+                if (matchesStatus && matchesSearch) {
+                    card.style.display = 'flex';
+                    visibleCards++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            section.style.display = visibleCards > 0 ? 'block' : 'none';
+        });
+    }
+
+    function executeSearchFilter() {
+        applyVisibilityRules();
+    }
+
+    function exportChecklistCSV() {
+        const savedStates = JSON.parse(localStorage.getItem(`qa_states_${currentTab}`)) || {};
+        const savedNotes = JSON.parse(localStorage.getItem(`qa_notes_${currentTab}`)) || {};
+        
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += "Tab Type,TC ID,Category,Test Scenario,Status,Notes\n";
+        
+        let localCounter = 1;
+        const currentData = multiData[currentTab] || [];
+        
+        currentData.forEach((section) => {
+            section.cases.forEach((scenarioText) => {
+                const tcId = `${currentTab.toUpperCase()}-${String(localCounter).padStart(3, '0')}`;
+                const status = savedStates[tcId] ? "Pass" : "Unchecked/Fail";
+                const note = savedNotes[tcId] ? savedNotes[tcId].replace(/"/g, '""') : "";
+                
+                const cleanSecText = scenarioText.replace(/"/g, '""');
+                const cleanCatText = section.category.replace(/"/g, '""');
+                
+                csvContent += `"${currentTab.toUpperCase()}","${tcId}","${cleanCatText}","${cleanSecText}","${status}","${note}"\n`;
+                localCounter++;
+            });
+        });
+        
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `${currentTab}_qa_checklist_report.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function resetChecklist() {
+        if(confirm("Wipe all tracking progress for the active tab dashboard?")) {
+            localStorage.removeItem(`qa_states_${currentTab}`);
+            localStorage.removeItem(`qa_notes_${currentTab}`);
+            document.getElementById('dashboard-search').value = '';
+            initChecklist();
+        }
+    }
+
+    function renderVault() {
+        const container = document.getElementById('checklist-container');
+        container.innerHTML = `
+            <div class="vault-container">
+                <div class="vault-block">
+                    <h3>💳 Massive Credit Card Test Matrix (All Gateways)</h3>
+                    <p style="margin-bottom:10px; font-size:0.95rem; color:#475569;">Type these exact numbers into the card fields to test different results. Use any future date and any CVV unless the rule says otherwise.</p>
+                    <table class="vault-table">
+                        <thead>
+                            <tr>
+                                <th>Card Brand / Gateway Goal</th>
+                                <th>Test Card Number</th>
+                                <th>CVV / Expiry Rules</th>
+                                <th>Expected Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><b>Visa (General Success)</b></td><td>4242 4242 4242 4242</td><td>Future Date / Any CVV</td><td>Passes successfully.</td></tr>
+                            <tr><td><b>Visa (Authorize.Net Success)</b></td><td>4007 0000 0000 0027</td><td>Future Date / Any CVV</td><td>Passes Authorize.Net successfully.</td></tr>
+                            <tr><td><b>Visa (Moneris Success)</b></td><td>4502 6543 2100 0000</td><td>Future Date / Any CVV</td><td>Passes Moneris successfully.</td></tr>
+                            <tr><td><b>Mastercard (General Success)</b></td><td>5105 1051 0510 5105</td><td>Future Date / Any CVV</td><td>Passes successfully.</td></tr>
+                            <tr><td><b>Mastercard (Moneris Success)</b></td><td>5412 3456 7890 0000</td><td>Future Date / Any CVV</td><td>Passes Moneris successfully.</td></tr>
+                            <tr><td><b>American Express (General Success)</b></td><td>3782 8224 6310 005</td><td>Future Date / 4 digits</td><td>Passes successfully.</td></tr>
+                            <tr><td><b>Discover (General Success)</b></td><td>6011 1111 1111 1117</td><td>Future Date / Any CVV</td><td>Passes successfully.</td></tr>
+                            <tr><td><b>JCB (General Success)</b></td><td>3528 0000 0000 0000</td><td>Future Date / Any CVV</td><td>Passes successfully.</td></tr>
+                            <tr><td><b>Diners Club (General Success)</b></td><td>3000 0000 0000 0014</td><td>Future Date / Any CVV</td><td>Passes successfully.</td></tr>
+                            <tr><td><b>UnionPay (General Success)</b></td><td>6200 0000 0000 0000</td><td>Future Date / Any CVV</td><td>Passes successfully.</td></tr>
+                            <tr><td><b>Decline - Insufficient Funds (Error 2001)</b></td><td>4000 0000 0000 0027</td><td>Future Date / Any CVV</td><td>Shows 'Insufficient Funds' or 'Declined'.</td></tr>
+                            <tr><td><b>Decline - Stolen Card (Error 2004)</b></td><td>4000 0000 0000 0043</td><td>Future Date / Any CVV</td><td>Shows 'Transaction Denied / Stolen'.</td></tr>
+                            <tr><td><b>Decline - Pick Up Card (Error 2003)</b></td><td>4111 1111 1111 1111</td><td>Future Date / Any CVV</td><td>Shows 'Pick Up Card' or 'Lost Card'.</td></tr>
+                            <tr><td><b>Decline - Fraud Suspected (Error 250)</b></td><td>4222 2222 2222 2224</td><td>Future Date / Any CVV</td><td>Shows warning alert for fraud risk.</td></tr>
+                            <tr><td><b>Error - Incorrect Format (Luhn Fail)</b></td><td>4242 4242 4242 4241</td><td>Future Date / Any CVV</td><td>Fails on the screen before talking to API.</td></tr>
+                            <tr><td><b>Error - Expired Date Rule</b></td><td>4242 4242 4242 4242</td><td>Use Past Date (e.g. 01/22)</td><td>Box turns red before user can click pay.</td></tr>
+                            <tr><td><b>Error - Bad CVV Match (Error 65)</b></td><td>4242 4242 4242 4242</td><td>Future Date / CVV: 999</td><td>Server drops payment and says CVV is bad.</td></tr>
+                            <tr><td><b>Error - Bad Address (AVS Error 27)</b></td><td>4242 4242 4242 4242</td><td>Use Wrong Zip Code (00000)</td><td>Fails because address does not match card.</td></tr>
+                            <tr><td><b>Error - Call Bank (Error 2000)</b></td><td>4000 0000 0000 0001</td><td>Future Date / Any CVV</td><td>Shows error telling user to call their bank.</td></tr>
+                            <tr><td><b>Error - Duplicate Click (Error 11)</b></td><td>4242 4242 4242 4242</td><td>Click pay button twice</td><td>Shows duplicate transaction error.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="vault-block">
+                    <h3>📱 Google Pay, Apple Pay & PayPal Setup Matrix</h3>
+                    <table class="vault-table">
+                        <thead>
+                            <tr>
+                                <th>Wallet Tool</th>
+                                <th>Positive Path Setup</th>
+                                <th>Negative Path Setup</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><b>Google Pay Sandbox</b></td><td>Log into Android or Chrome with a sandbox Google account. Join the Google test group first.</td><td>Remove all cards from the Google account to test the 'No Saved Card' empty wallet error.</td></tr>
+                            <tr><td><b>Apple Pay Sandbox</b></td><td>Add Apple Developer Sandbox cards directly inside the iPhone Passbook app settings.</td><td>Change your phone region to force a tax or shipping failure. Fail Face ID 3 times.</td></tr>
+                            <tr><td><b>PayPal Sandbox Portal</b></td><td>Log into PayPal developer panel and make a fake buyer account with a fake balance.</td><td>Change your sandbox buyer account balance to exactly $0.00 to force it to decline.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="vault-block">
+                    <h3>🔗 Official Payment Gateway Documentation Links</h3>
+                    <p style="font-size:0.9rem; color:var(--text-muted);">Use these exact links to read the official rules and get more test cards directly from the companies:</p>
+                    <br>
+                    <li><a class="doc-link" href="https://developers.google.com/pay/api/web/guides/resources/test-card-suite" target="_blank">↗ Google Pay Web API Official Test Card Suite (Working Link)</a></li>
+                    <li><a class="doc-link" href="https://developer.apple.com/apple-pay/sandbox-testing/" target="_blank">↗ Apple Pay Sandbox Official Environment Cards</a></li>
+                    <li><a class="doc-link" href="https://developer.authorize.net/hello_world/testing_guide.html" target="_blank">↗ Authorize.Net Complete Testing Guide</a></li>
+                    <li><a class="doc-link" href="https://developer.moneris.com/en/Documentation/NA/eCommerce/Hosted%20Solutions/Hosted%20Tokenization" target="_blank">↗ Moneris Hosted Tokenization Documentation</a></li>
+                    <li><a class="doc-link" href="https://developer.paypal.com/docs/checkout/apm/test-cards/google-pay/" target="_blank">↗ PayPal Developer Test Card Matrix</a></li>
+                </tbody>
+            </div>
+        `;
+    }
+
+    window.onload = initChecklist;
+</script>
+</body>
+</html>
